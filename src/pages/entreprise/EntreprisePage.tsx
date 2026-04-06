@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
-  Building2, TrendingUp, CreditCard, FileText, Users, Globe,
-  ChevronRight, CheckCircle, Briefcase, BarChart3, Shield
+  Building2, TrendingUp, CreditCard, FileText, Globe,
+  ChevronRight, CheckCircle, Briefcase, BarChart3,
 } from 'lucide-react';
 
 const solutions = [

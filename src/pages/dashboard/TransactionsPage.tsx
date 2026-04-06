@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Receipt, Download, TrendingDown, Search, Filter, Calendar } from 'lucide-react';
-import { useAuth, type Transaction } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 function formatMoney(n: number) {
   return Math.abs(n).toLocaleString('fr-FR') + ' FCFA';

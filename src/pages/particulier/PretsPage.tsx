@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Landmark, Calculator, Clock, Shield, ChevronRight, CheckCircle, ArrowRight } from 'lucide-react';
+import { Calculator, ChevronRight } from 'lucide-react';
 
 const products = [
   {

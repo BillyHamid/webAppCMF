@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { CreditCard, Shield, Globe, Smartphone, Wifi, ChevronRight, Zap, Star } from 'lucide-react';
+import { Shield, Globe, Smartphone, Wifi, ChevronRight, Zap, Star } from 'lucide-react';
 
 const cards = [
   {

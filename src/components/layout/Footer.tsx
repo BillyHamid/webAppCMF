@@ -2,13 +2,14 @@ import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, MessageCircle, ArrowRight, ExternalLink } from 'lucide-react';
 import SiteLogo from '../brand/SiteLogo';
 
+/** Routes alignées sur `App.tsx` (évite la page * « en construction »). */
 const footerLinks = {
   'Services': [
     { label: "Comptes d'épargne", href: '/particulier/epargne' },
     { label: 'Comptes courants', href: '/particulier/courant' },
     { label: 'Cartes bancaires', href: '/particulier/cartes' },
     { label: 'Prêts & Crédits', href: '/particulier/prets' },
-    { label: "Transferts d'argent", href: '/particulier/transfert' },
+    { label: "Transferts d'argent", href: '/particulier/transferts' },
   ],
   'Digital': [
     { label: 'Application mobile', href: '/particulier/digital/mobile' },
@@ -17,15 +18,15 @@ const footerLinks = {
     { label: 'Alertes SMS & Email', href: '/particulier/digital/notifications' },
   ],
   'Entreprise': [
-    { label: 'Solutions digitales', href: '/entreprise/solutions-digitales' },
-    { label: 'Commerce international', href: '/entreprise/commerce-international' },
-    { label: 'TPE & Encaissement', href: '/entreprise/tpe' },
+    { label: 'Solutions digitales', href: '/entreprise' },
+    { label: 'Commerce international', href: '/entreprise' },
+    { label: 'TPE & Encaissement', href: '/entreprise' },
   ],
   'Informations': [
-    { label: 'Qui sommes-nous', href: '/a-propos/qui-sommes-nous' },
-    { label: 'Notre histoire', href: '/a-propos/histoire' },
-    { label: 'Actualités', href: '/actualite' },
-    { label: 'Nous contacter', href: '/contact/formulaire' },
+    { label: 'Qui sommes-nous', href: '/a-propos' },
+    { label: 'Notre histoire', href: '/a-propos' },
+    { label: 'Actualités', href: '/actualites' },
+    { label: 'Nous contacter', href: '/contact' },
   ],
 };
 
@@ -91,7 +92,7 @@ export default function Footer() {
                   <li key={link.label}>
                     <Link
                       to={link.href}
-                      className="text-xs text-gray-400 hover:text-white transition-colors"
+                      className="text-xs text-gray-400 hover:text-white transition-colors touch-manipulation cursor-pointer"
                     >
                       {link.label}
                     </Link>

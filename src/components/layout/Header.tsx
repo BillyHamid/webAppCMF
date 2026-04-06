@@ -96,14 +96,41 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [subExpanded, setSubExpanded] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!open) return;
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onEsc);
+    return () => document.removeEventListener('keydown', onEsc);
+  }, [open, onClose]);
+
+  useEffect(() => {
+    if (open) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prev;
+      };
+    }
+    return undefined;
+  }, [open]);
+
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 lg:hidden">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="absolute right-0 top-0 bottom-0 w-[85%] max-w-sm bg-white overflow-y-auto shadow-2xl animate-[slideIn_0.3s_ease]">
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <SiteLogo className="h-10 object-contain" />
+    <div
+      className="fixed inset-0 z-[200] lg:hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Menu principal"
+    >
+      <div className="absolute inset-0 z-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute right-0 top-0 bottom-0 z-10 flex w-[85%] max-w-sm flex-col bg-white shadow-2xl animate-[slideIn_0.3s_ease] overflow-y-auto touch-pan-y">
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 shrink-0">
+          <Link to="/" onClick={onClose} className="touch-manipulation">
+            <SiteLogo className="h-10 object-contain" />
+          </Link>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
             <X size={22} className="text-gray-500" />
           </button>
@@ -112,74 +139,98 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
         <nav className="p-3">
           {mainNavigation.map((item) => (
             <div key={item.href} className="border-b border-gray-50 last:border-0">
-              <button
-                onClick={() => {
-                  if (item.children) {
-                    setExpanded(expanded === item.href ? null : item.href);
-                    setSubExpanded(null);
-                  }
-                }}
-                className="flex items-center justify-between w-full px-4 py-3.5 text-sm font-semibold text-coris-navy hover:text-coris-blue rounded-lg transition-colors"
-              >
-                {item.label}
-                {item.children && (
-                  <ChevronDown
-                    size={16}
-                    className={`text-gray-400 transition-transform duration-200 ${expanded === item.href ? 'rotate-180' : ''}`}
-                  />
-                )}
-              </button>
+              {!item.children ? (
+                <Link
+                  to={item.href}
+                  onClick={onClose}
+                  className="flex items-center justify-between w-full px-4 py-3.5 text-sm font-semibold text-coris-navy hover:text-coris-blue hover:bg-coris-sky/50 rounded-lg transition-colors touch-manipulation cursor-pointer"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setExpanded(expanded === item.href ? null : item.href);
+                      setSubExpanded(null);
+                    }}
+                    className="flex items-center justify-between w-full px-4 py-3.5 text-sm font-semibold text-coris-navy hover:text-coris-blue rounded-lg transition-colors"
+                  >
+                    {item.label}
+                    <ChevronDown
+                      size={16}
+                      className={`text-gray-400 transition-transform duration-200 ${expanded === item.href ? 'rotate-180' : ''}`}
+                    />
+                  </button>
 
-              {item.children && expanded === item.href && (
-                <div className="pb-2 pl-2 space-y-0.5">
-                  {item.children.map((child) => (
-                    <div key={child.href}>
-                      <button
-                        onClick={() => {
-                          if (child.children) {
-                            setSubExpanded(subExpanded === child.href ? null : child.href);
-                          } else {
-                            onClose();
-                          }
-                        }}
-                        className="flex items-center justify-between w-full px-4 py-2.5 text-sm text-gray-600 hover:text-coris-blue hover:bg-coris-sky rounded-lg transition-colors"
-                      >
-                        {child.label}
-                        {child.children && (
-                          <ChevronDown
-                            size={14}
-                            className={`text-gray-300 transition-transform ${subExpanded === child.href ? 'rotate-180' : ''}`}
-                          />
-                        )}
-                      </button>
-
-                      {child.children && subExpanded === child.href && (
-                        <div className="pl-4 py-1 space-y-0.5">
-                          {child.children.map((sub) => (
+                  {expanded === item.href && (
+                    <div className="pb-2 pl-2 space-y-0.5">
+                      {item.children.map((child) => (
+                        <div key={child.href}>
+                          {!child.children ? (
                             <Link
-                              key={sub.href}
-                              to={sub.href}
+                              to={child.href}
                               onClick={onClose}
-                              className="block px-4 py-2 text-xs text-gray-500 hover:text-coris-blue rounded-lg transition-colors"
+                              className="flex items-center justify-between w-full px-4 py-2.5 text-sm text-gray-600 hover:text-coris-blue hover:bg-coris-sky rounded-lg transition-colors touch-manipulation cursor-pointer"
                             >
-                              {sub.label}
+                              {child.label}
                             </Link>
-                          ))}
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setSubExpanded(subExpanded === child.href ? null : child.href)
+                                }
+                                className="flex items-center justify-between w-full px-4 py-2.5 text-sm text-gray-600 hover:text-coris-blue hover:bg-coris-sky rounded-lg transition-colors"
+                              >
+                                {child.label}
+                                <ChevronDown
+                                  size={14}
+                                  className={`text-gray-300 transition-transform ${subExpanded === child.href ? 'rotate-180' : ''}`}
+                                />
+                              </button>
+
+                              {subExpanded === child.href && (
+                                <div className="pl-4 py-1 space-y-0.5">
+                                  {child.children.map((sub) => (
+                                    <Link
+                                      key={sub.href}
+                                      to={sub.href}
+                                      onClick={onClose}
+                                      className="block px-4 py-2 text-xs text-gray-500 hover:text-coris-blue rounded-lg transition-colors"
+                                    >
+                                      {sub.label}
+                                    </Link>
+                                  ))}
+                                </div>
+                              )}
+                            </>
+                          )}
                         </div>
-                      )}
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  )}
+                </>
               )}
             </div>
           ))}
         </nav>
 
-        <div className="p-5 space-y-3 border-t border-gray-100">
-          <Link to="/login" onClick={onClose} className="flex items-center justify-center gap-2 w-full bg-coris-blue text-white py-3 rounded-xl text-sm font-semibold hover:bg-coris-blue-dark transition-colors">
+        <div className="p-5 space-y-3 border-t border-gray-100 shrink-0">
+          <Link
+            to="/login"
+            onClick={onClose}
+            className="flex items-center justify-center gap-2 w-full bg-coris-blue text-white py-3 rounded-xl text-sm font-semibold hover:bg-coris-blue-dark transition-colors touch-manipulation cursor-pointer"
+          >
             <LogIn size={16} /> Se connecter
           </Link>
-          <Link to="/particulier/epargne" onClick={onClose} className="flex items-center justify-center gap-2 w-full border-2 border-coris-red text-coris-red py-3 rounded-xl text-sm font-semibold hover:bg-coris-red hover:text-white transition-colors">
+          <Link
+            to="/particulier/epargne"
+            onClick={onClose}
+            className="flex items-center justify-center gap-2 w-full border-2 border-coris-red text-coris-red py-3 rounded-xl text-sm font-semibold hover:bg-coris-red hover:text-white transition-colors touch-manipulation cursor-pointer"
+          >
             Ouvrir un compte <ArrowRight size={16} />
           </Link>
         </div>

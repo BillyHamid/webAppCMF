@@ -25,6 +25,7 @@ import SettingsPage from './pages/dashboard/SettingsPage';
 import ReportsPage from './pages/dashboard/ReportsPage';
 import CreditModulePage from './pages/dashboard/CreditModulePage';
 import BudgetPlannerPage from './pages/dashboard/BudgetPlannerPage';
+import AccountLinkingPage from './pages/dashboard/AccountLinkingPage';
 
 export default function App() {
   return (
@@ -69,6 +70,7 @@ export default function App() {
           <Route path="credit" element={<CreditModulePage />} />
           <Route path="budget" element={<BudgetPlannerPage />} />
           <Route path="parametres" element={<SettingsPage />} />
+          <Route path="liaison-compte" element={<AccountLinkingPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

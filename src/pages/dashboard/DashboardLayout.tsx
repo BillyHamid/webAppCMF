@@ -14,6 +14,7 @@ import {
   BarChart3,
   PieChart,
   Landmark,
+  Link2,
 } from 'lucide-react';
 import SiteLogo from '../../components/brand/SiteLogo';
 import MayaChat from '../../components/layout/MayaChat';
@@ -40,6 +41,7 @@ const navSections: { title: string; items: NavItem[] }[] = [
     items: [
       { to: '/dashboard/transfert', icon: ArrowLeftRight, label: 'Transferts' },
       { to: '/dashboard/bank-to-wallet', icon: Wallet, label: 'Bank to Wallet' },
+      { to: '/dashboard/liaison-compte', icon: Link2, label: 'Liaison de compte' },
       { to: '/dashboard/cartes', icon: CreditCard, label: 'Mes Cartes' },
       { to: '/dashboard/transactions', icon: Receipt, label: 'Historique' },
     ],

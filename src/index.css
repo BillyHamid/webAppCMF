@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  /* Coris Meso Finance - Brand Colors */
+  --color-coris-blue: #1A3668;
+  --color-coris-blue-dark: #0F2347;
+  --color-coris-blue-light: #2A4F8F;
+  --color-coris-red: #CE1126;
+  --color-coris-red-dark: #A30D1E;
+  --color-coris-red-light: #E8344A;
+  --color-coris-navy: #0D1B2A;
+  --color-coris-sky: #EBF0F7;
+  --color-coris-gray: #F7F8FA;
+  --color-coris-gray-dark: #5A6A7E;
+  --color-coris-gold: #D4A843;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #1A1A2E;
+}
+
+::selection {
+  background: #1A3668;
+  color: white;
+}

@@ -35,9 +35,15 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => boolean;
   logout: () => void;
+  /** Mouvements affichés pour l’utilisateur connecté (vide pour un profil « nouveau client »). */
   transactions: Transaction[];
+  /** Profil créé après ouverture de compte validée : un seul compte, solde 0 au départ. */
+  isNewClient: boolean;
 }
 
+const NEW_CLIENT_ID = '2';
+
+/** Client existant (démo) — plusieurs comptes, soldes > 0. */
 const mockUser: User = {
   id: '1',
   firstName: 'Aminata',
@@ -52,6 +58,36 @@ const mockUser: User = {
     { id: 'a4', label: 'Compte Tontine', type: 'tontine', number: 'CMF-5590-00195', balance: 620_000, currency: 'FCFA', status: 'actif', openedDate: '10 Sep. 2025', lastActivity: '28 Mar. 2026' },
   ],
 };
+
+/**
+ * Nouveau client après validation du dossier (aligné sur le suivi CMF-2026-00098).
+ * Un seul compte au départ, solde 0 FCFA jusqu’au premier dépôt.
+ */
+const newClientUser: User = {
+  id: NEW_CLIENT_ID,
+  firstName: 'Ibrahim',
+  lastName: 'Sawadogo',
+  email: 'ibrahim.s@email.com',
+  phone: '+226 70 88 99 00',
+  accountNumber: 'CMF-00998001',
+  accounts: [
+    {
+      id: 'nc1',
+      label: 'Épargne Classique',
+      type: 'epargne',
+      number: 'CMF-8891-00998',
+      balance: 0,
+      currency: 'FCFA',
+      status: 'actif',
+      openedDate: '30 Mar. 2026',
+      lastActivity: '—',
+    },
+  ],
+};
+
+function isNewClientEmail(email: string) {
+  return email.trim().toLowerCase() === newClientUser.email.toLowerCase();
+}
 
 const mockTransactions: Transaction[] = [
   { id: 't1', label: 'Salaire Mars 2026', amount: 450_000, date: '01 Avr. 2026', type: 'credit', category: 'Salaire' },
@@ -75,17 +111,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
   const login = (email: string, password: string) => {
-    if (email && password === LOGIN_PASSWORD) {
-      setUser({ ...mockUser, email });
-      return true;
+    if (!email || password !== LOGIN_PASSWORD) return false;
+    const trimmed = email.trim();
+    if (isNewClientEmail(trimmed)) {
+      setUser({ ...newClientUser, email: trimmed });
+    } else {
+      setUser({ ...mockUser, email: trimmed });
     }
-    return false;
+    return true;
   };
 
   const logout = () => setUser(null);
 
+  const isNewClient = user?.id === NEW_CLIENT_ID;
+  const transactions = isNewClient ? [] : mockTransactions;
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, transactions: mockTransactions }}>
+    <AuthContext.Provider value={{ user, login, logout, transactions, isNewClient }}>
       {children}
     </AuthContext.Provider>
   );

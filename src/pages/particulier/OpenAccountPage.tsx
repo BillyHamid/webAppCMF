@@ -272,6 +272,7 @@ function getDocumentUploadSlots(accountId: string): { id: string; label: string;
 function AccountForm() {
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [submissionRef, setSubmissionRef] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const [form, setForm] = useState({
@@ -404,6 +405,8 @@ function AccountForm() {
   };
 
   const handleSubmit = () => {
+    const ref = `CMF-2026-${String(Math.floor(Math.random() * 99999)).padStart(5, '0')}`;
+    setSubmissionRef(ref);
     setSubmitted(true);
   };
 
@@ -412,7 +415,7 @@ function AccountForm() {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="text-center py-20"
+        className="text-center py-12 sm:py-20 px-4"
       >
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
           <Check className="text-green-600" size={36} />
@@ -422,13 +425,32 @@ function AccountForm() {
           Votre demande d'ouverture de compte <strong>{selectedAccount?.name}</strong> a été 
           soumise avec succès. Notre équipe la traitera sous 24 heures ouvrées.
         </p>
-        <div className="inline-flex items-center gap-2 bg-coris-blue/5 border border-coris-blue/15 rounded-xl px-5 py-3 mb-4">
+        <div className="inline-flex items-center gap-2 bg-coris-blue/5 border border-coris-blue/15 rounded-xl px-5 py-3 mb-6">
           <span className="text-xs text-coris-gray-dark">Votre référence :</span>
-          <span className="font-mono font-bold text-coris-navy">CMF-2026-{String(Math.floor(Math.random() * 99999)).padStart(5, '0')}</span>
+          <span className="font-mono font-bold text-coris-navy">{submissionRef}</span>
         </div>
-        <p className="text-sm text-coris-gray-dark mb-8">
-          Un email de confirmation a été envoyé à <strong>{form.email}</strong>.<br />
-          Conservez votre numéro de référence pour suivre l'avancement.
+
+        <div className="max-w-xl mx-auto text-left bg-coris-gray rounded-2xl border border-gray-100 p-5 sm:p-6 mb-8">
+          <p className="text-xs font-bold text-coris-navy uppercase tracking-wider mb-3">Ensuite, comment ouvrir votre espace client ?</p>
+          <ol className="text-sm text-coris-gray-dark space-y-2 list-decimal list-inside leading-relaxed">
+            <li>
+              <strong>Vérification du dossier</strong> (KYC) : vous suivez l’état sur la page{' '}
+              <Link to="/suivi" className="text-coris-blue font-semibold underline">Suivre ma demande</Link> avec votre référence ou votre e-mail.
+            </li>
+            <li>
+              <strong>Validation</strong> : une fois le dossier approuvé, Coris Meso Finance crée votre compte. Vous recevez un <strong>SMS</strong> et un <strong>e-mail</strong> avec vos identifiants d’accès à l’espace client.
+            </li>
+            <li>
+              <strong>Première connexion</strong> : vous vous connectez avec cet e-mail et le mot de passe provisoire, puis vous le personnalisez. Votre <strong>solde démarre à 0 FCFA</strong> ; le type de compte demandé (épargne, courant, etc.) apparaît dans votre espace après activation.
+            </li>
+            <li>
+              <strong>Alimentation</strong> : dépôt en agence, virement ou mobile money pour créditer votre compte.
+            </li>
+          </ol>
+        </div>
+
+        <p className="text-sm text-coris-gray-dark mb-8 max-w-md mx-auto">
+          Un e-mail de confirmation a été envoyé à <strong>{form.email}</strong>.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <Link

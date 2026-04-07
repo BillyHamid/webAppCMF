@@ -26,6 +26,7 @@ import ReportsPage from './pages/dashboard/ReportsPage';
 import CreditModulePage from './pages/dashboard/CreditModulePage';
 import BudgetPlannerPage from './pages/dashboard/BudgetPlannerPage';
 import AccountLinkingPage from './pages/dashboard/AccountLinkingPage';
+import PayHubPage from './pages/dashboard/PayHubPage';
 
 export default function App() {
   return (
@@ -71,6 +72,7 @@ export default function App() {
           <Route path="budget" element={<BudgetPlannerPage />} />
           <Route path="parametres" element={<SettingsPage />} />
           <Route path="liaison-compte" element={<AccountLinkingPage />} />
+          <Route path="payer" element={<PayHubPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

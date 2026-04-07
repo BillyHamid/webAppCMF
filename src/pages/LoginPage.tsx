@@ -135,6 +135,14 @@ export default function LoginPage() {
             </Link>
           </p>
 
+          <div className="mt-6 rounded-xl border border-gray-200 bg-coris-gray/50 px-4 py-3 text-left">
+            <p className="text-[11px] font-bold text-coris-navy uppercase tracking-wide mb-1.5">Parcours ouverture de compte (démo)</p>
+            <p className="text-[11px] text-coris-gray-dark leading-relaxed">
+              Après validation du dossier sur <strong>Suivre ma demande</strong>, connectez-vous avec l’e-mail du dossier. Pour tester le profil{' '}
+              <strong>nouveau client</strong> (solde 0, un compte épargne) : <code className="text-coris-blue bg-white px-1 rounded">ibrahim.s@email.com</code> — même mot de passe que votre démo.
+            </p>
+          </div>
+
           <div className="flex items-center justify-center gap-2 mt-8 text-[11px] text-coris-gray-dark">
             <ShieldCheck size={14} className="text-coris-blue shrink-0" />
             Connexion sécurisée — SSL 256-bit

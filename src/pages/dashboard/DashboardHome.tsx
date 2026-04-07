@@ -115,7 +115,7 @@ function TransactionRow({ tx }: { tx: Transaction }) {
 }
 
 export default function DashboardHome() {
-  const { user, transactions } = useAuth();
+  const { user, transactions, isNewClient } = useAuth();
   const [showBalance, setShowBalance] = useState(true);
 
   if (!user) return null;
@@ -126,11 +126,21 @@ export default function DashboardHome() {
     { icon: Send, label: 'Virement', to: '/dashboard/transfert', color: 'bg-blue-50 text-coris-blue' },
     { icon: Wallet, label: 'Bank → Wallet', to: '/dashboard/bank-to-wallet', color: 'bg-purple-50 text-purple-600' },
     { icon: CreditCard, label: 'Mes Cartes', to: '/dashboard/cartes', color: 'bg-amber-50 text-amber-600' },
-    { icon: QrCode, label: 'Payer', to: '#', color: 'bg-emerald-50 text-emerald-600' },
+    { icon: QrCode, label: 'Payer', to: '/dashboard/payer', color: 'bg-emerald-50 text-emerald-600' },
   ];
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
+      {isNewClient && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/90 px-4 py-3 sm:px-5 sm:py-4 text-sm text-amber-950">
+          <p className="font-bold text-coris-navy mb-1">Bienvenue — compte récemment activé</p>
+          <p className="text-coris-gray-dark leading-relaxed">
+            Votre solde est à <strong>0 FCFA</strong> jusqu’à votre premier dépôt ou virement entrant. Le ou les comptes ouverts
+            figurent ci-dessous ; l’historique des opérations sera alimenté au fil de votre activité.
+          </p>
+        </div>
+      )}
+
       {/* Solde total + Actions rapides */}
       <div className="grid md:grid-cols-3 gap-4">
         <motion.div
@@ -153,10 +163,12 @@ export default function DashboardHome() {
                   </button>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 bg-emerald-500/20 rounded-full px-3 py-1">
-                <TrendingUp size={13} />
-                <span className="text-xs font-semibold">+2.4%</span>
-              </div>
+              {!isNewClient && totalBalance > 0 && (
+                <div className="flex items-center gap-1.5 bg-emerald-500/20 rounded-full px-3 py-1">
+                  <TrendingUp size={13} />
+                  <span className="text-xs font-semibold">+2.4%</span>
+                </div>
+              )}
             </div>
             <div className="flex gap-2 text-xs">
               {user.accounts.map((acc) => {
@@ -231,9 +243,13 @@ export default function DashboardHome() {
           </Link>
         </div>
         <div>
-          {transactions.slice(0, 6).map((tx) => (
-            <TransactionRow key={tx.id} tx={tx} />
-          ))}
+          {transactions.length === 0 ? (
+            <p className="text-sm text-coris-gray-dark py-6 text-center border border-dashed border-gray-200 rounded-xl bg-coris-gray/50">
+              Aucune opération pour l’instant. Après votre premier dépôt ou paiement, l’historique apparaîtra ici.
+            </p>
+          ) : (
+            transactions.slice(0, 6).map((tx) => <TransactionRow key={tx.id} tx={tx} />)
+          )}
         </div>
       </motion.div>
     </div>

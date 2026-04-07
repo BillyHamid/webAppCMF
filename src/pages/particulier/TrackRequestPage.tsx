@@ -20,6 +20,7 @@ import {
   MapPin,
   CalendarDays,
   Shield,
+  LogIn,
 } from 'lucide-react';
 
 /* ═══════════════════ TYPES ═══════════════════ */
@@ -376,22 +377,60 @@ function TrackingResultView({ result }: { result: TrackingResult }) {
         </div>
       </div>
 
+      {/* Compte actif : accès à l’espace client */}
+      {isComplete && (
+        <div className="mb-8 rounded-2xl border border-green-200 bg-white p-6 sm:p-8 shadow-sm">
+          <h3 className="text-lg font-extrabold text-coris-navy mb-2 flex items-center gap-2">
+            <PartyPopper size={22} className="text-green-600 shrink-0" />
+            Accéder à votre espace client
+          </h3>
+          <p className="text-sm text-coris-gray-dark mb-5 leading-relaxed">
+            Votre compte est ouvert. La procédure réelle envoie vos identifiants par <strong>SMS</strong> et{' '}
+            <strong>e-mail</strong>. Ensuite vous vous connectez pour consulter vos comptes (solde à{' '}
+            <strong>0 FCFA</strong> jusqu’au premier dépôt) et personnaliser votre mot de passe.
+          </p>
+          <ol className="text-sm text-coris-navy space-y-2 mb-6 list-decimal list-inside">
+            <li>Utilisez l’adresse e-mail de votre dossier : <strong>{result.email}</strong></li>
+            <li>Mot de passe provisoire reçu par SMS (démo : même mot de passe que sur l’écran de connexion test)</li>
+            <li>À la première connexion, effectuez un dépôt ou un virement pour alimenter votre compte</li>
+          </ol>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2 bg-coris-blue text-white font-semibold px-6 py-3 rounded-full text-sm hover:bg-coris-blue-dark transition-colors shadow-md shadow-coris-blue/20"
+            >
+              <LogIn size={18} />
+              Se connecter à mon compte
+            </Link>
+            <Link
+              to="/particulier/epargne"
+              className="inline-flex items-center gap-2 border-2 border-gray-200 text-coris-navy font-semibold px-6 py-3 rounded-full text-sm hover:border-coris-blue/30 transition-colors"
+            >
+              Nouvelle demande
+              <ArrowRight size={15} />
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Actions */}
       <div className="mt-8 flex flex-wrap gap-3 justify-center">
         <Link
-          to="/contact/formulaire"
+          to="/contact"
           className="inline-flex items-center gap-2 border-2 border-coris-blue text-coris-blue font-semibold px-6 py-3 rounded-full text-sm hover:bg-coris-blue hover:text-white transition-all"
         >
           <Phone size={15} />
           Contacter un conseiller
         </Link>
-        <Link
-          to="/particulier/epargne"
-          className="inline-flex items-center gap-2 bg-coris-blue text-white font-semibold px-6 py-3 rounded-full text-sm hover:bg-coris-blue-dark transition-colors shadow-lg shadow-coris-blue/15"
-        >
-          Nouvelle demande
-          <ArrowRight size={15} />
-        </Link>
+        {!isComplete && (
+          <Link
+            to="/particulier/epargne"
+            className="inline-flex items-center gap-2 bg-coris-blue text-white font-semibold px-6 py-3 rounded-full text-sm hover:bg-coris-blue-dark transition-colors shadow-lg shadow-coris-blue/15"
+          >
+            Nouvelle demande
+            <ArrowRight size={15} />
+          </Link>
+        )}
       </div>
     </motion.div>
   );
@@ -428,7 +467,7 @@ function NotFound({ query }: { query: string }) {
         ))}
       </div>
       <Link
-        to="/contact/formulaire"
+        to="/contact"
         className="inline-flex items-center gap-2 text-coris-blue font-semibold text-sm hover:gap-3 transition-all"
       >
         <Phone size={15} />

@@ -5,38 +5,51 @@ export interface HeroSlide {
   cta: { label: string; href: string };
   secondaryCta?: { label: string; href: string };
   accent: string;
+  /**
+   * Image de fond (déposée dans `public/hero/`), fusionnée avec les couleurs Coris dans le HeroSlider.
+   * Ex. `/hero/slide-1.png` — si absent ou erreur de chargement, le dégradé seul s’affiche.
+   */
+  image?: string;
 }
 
 export const heroSlides: HeroSlide[] = [
   {
     id: 1,
-    title: 'La meso finance au service de votre avenir',
-    subtitle: 'Coris Meso Finance vous accompagne dans tous vos projets avec des solutions financières accessibles et innovantes.',
-    cta: { label: 'Ouvrir un compte', href: '/particulier/epargne' },
+    title: 'L’épargne qui vous ressemble',
+    subtitle:
+      'Épargne Seya : des taux compétitifs et un accompagnement proche de vos projets, pour la solution PME et au-delà.',
+    cta: { label: 'Découvrir l’épargne', href: '/particulier/epargne' },
     secondaryCta: { label: 'Nos services', href: '/particulier' },
     accent: 'blue',
+    image: '/hero/slide-1.png',
   },
   {
     id: 2,
-    title: 'Votre crédit en 72 heures',
-    subtitle: 'Salariés et retraités, obtenez votre prêt rapidement avec des conditions avantageuses et un accompagnement personnalisé.',
-    cta: { label: 'Simuler un prêt', href: '/particulier/prets' },
+    title: 'Épargne Yoondo',
+    subtitle:
+      'Pour sécuriser le fruit de vos nombreux sacrifices — une épargne claire, avec l’expertise Coris Meso Finance.',
+    cta: { label: 'En savoir plus', href: '/particulier/epargne' },
     accent: 'red',
+    image: '/hero/slide-2.png',
   },
   {
     id: 3,
-    title: 'Banque digitale, sans limites',
-    subtitle: 'Gérez vos finances 24h/24 depuis votre smartphone. Virements, paiements, consultations — tout en un clic.',
-    cta: { label: 'Découvrir', href: '/particulier/digital' },
-    secondaryCta: { label: 'Se connecter', href: '/internet-banking' },
+    title: 'Faites fructifier votre argent',
+    subtitle:
+      'Cultivez la croissance de votre patrimoine avec des solutions d’épargne pensées pour vos objectifs.',
+    cta: { label: 'Nos offres', href: '/particulier/epargne' },
+    secondaryCta: { label: 'Banque digitale', href: '/particulier/digital' },
     accent: 'blue',
+    image: '/hero/slide-3.png',
   },
   {
     id: 4,
-    title: 'Ensemble, construisons le Burkina',
-    subtitle: "Entrepreneurs, commerçants, agriculteurs : des solutions de financement adaptées à chaque ambition.",
-    cta: { label: 'Solutions entreprise', href: '/entreprise' },
+    title: 'L’avenir de votre enfant commence maintenant',
+    subtitle:
+      'Épargne et sérénité : des produits adaptés aux familles, avec l’engagement Coris Meso Finance à vos côtés.',
+    cta: { label: 'Nous contacter', href: '/contact' },
     accent: 'red',
+    image: '/hero/slide-4.png',
   },
 ];
 

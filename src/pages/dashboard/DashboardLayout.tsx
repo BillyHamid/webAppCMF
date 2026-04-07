@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useEffect, type ComponentType } from 'react';
+import { useEffect, useState, useRef, type ComponentType } from 'react';
 import {
   LayoutDashboard,
   Wallet,
@@ -53,6 +53,21 @@ const flatNav = navSections.flatMap((s) => s.items);
 export default function DashboardLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!userMenuOpen && !notifOpen) return;
+    const close = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (userMenuOpen && userMenuRef.current && !userMenuRef.current.contains(t)) setUserMenuOpen(false);
+      if (notifOpen && notifRef.current && !notifRef.current.contains(t)) setNotifOpen(false);
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [userMenuOpen, notifOpen]);
 
   useEffect(() => {
     if (!user) navigate('/login');
@@ -144,13 +159,104 @@ export default function DashboardLayout() {
               <p className="text-xs text-coris-gray-dark">Bienvenue sur votre espace client</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button className="relative w-10 h-10 rounded-xl bg-coris-gray flex items-center justify-center hover:bg-gray-200 transition-colors">
-              <Bell size={18} className="text-coris-gray-dark" />
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-coris-red text-white text-[9px] font-bold rounded-full flex items-center justify-center">3</span>
-            </button>
-            <div className="w-10 h-10 rounded-xl bg-coris-blue text-white flex items-center justify-center font-bold text-sm">
-              {user.firstName[0]}{user.lastName[0]}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="relative" ref={notifRef}>
+              <button
+                type="button"
+                onClick={() => {
+                  setNotifOpen((o) => !o);
+                  setUserMenuOpen(false);
+                }}
+                className={`relative w-10 h-10 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
+                  notifOpen ? 'bg-coris-blue/15 ring-2 ring-coris-blue/20' : 'bg-coris-gray hover:bg-gray-200'
+                }`}
+                aria-label="Notifications"
+                aria-expanded={notifOpen}
+              >
+                <Bell size={18} className={notifOpen ? 'text-coris-blue' : 'text-coris-gray-dark'} />
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-coris-red text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                  3
+                </span>
+              </button>
+              {notifOpen && (
+                <div
+                  className="absolute right-0 top-full mt-2 w-[min(100vw-2rem,20rem)] max-h-[min(70vh,22rem)] overflow-y-auto rounded-xl border border-gray-100 bg-white py-2 shadow-xl z-[150]"
+                  role="menu"
+                >
+                  <p className="px-4 py-2 text-[10px] font-black uppercase tracking-wider text-gray-400">Notifications</p>
+                  {[
+                    { id: '1', t: 'Virement reçu', d: 'Un virement de 75 000 FCFA a été crédité sur votre compte courant.', when: 'Il y a 2 h' },
+                    { id: '2', t: 'Échéance carte', d: 'Votre carte se termine par 4821 arrive à échéance dans 60 jours.', when: 'Hier' },
+                    { id: '3', t: 'Sécurité', d: 'Connexion réussie depuis un nouvel appareil (Ouagadougou).', when: '28 Mar.' },
+                  ].map((n) => (
+                    <button
+                      key={n.id}
+                      type="button"
+                      className="w-full text-left px-4 py-3 hover:bg-coris-gray/80 border-b border-gray-50 last:border-0 transition-colors"
+                      onClick={() => setNotifOpen(false)}
+                    >
+                      <p className="text-sm font-semibold text-coris-navy">{n.t}</p>
+                      <p className="text-xs text-coris-gray-dark mt-0.5 leading-snug">{n.d}</p>
+                      <p className="text-[10px] text-gray-400 mt-1.5">{n.when}</p>
+                    </button>
+                  ))}
+                  <div className="px-3 pt-1 pb-2">
+                    <Link
+                      to="/dashboard/transactions"
+                      onClick={() => setNotifOpen(false)}
+                      className="block text-center text-xs font-semibold text-coris-blue py-2 rounded-lg hover:bg-coris-blue/5"
+                    >
+                      Voir l’historique des opérations
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="relative lg:hidden" ref={userMenuRef}>
+              <button
+                type="button"
+                onClick={() => {
+                  setUserMenuOpen((o) => !o);
+                  setNotifOpen(false);
+                }}
+                className="w-10 h-10 rounded-xl bg-coris-blue text-white flex items-center justify-center font-bold text-sm shrink-0 ring-offset-2 focus:outline-none focus:ring-2 focus:ring-coris-blue/40"
+                aria-expanded={userMenuOpen}
+                aria-haspopup="menu"
+                aria-label="Menu compte"
+              >
+                {user.firstName[0]}
+                {user.lastName[0]}
+              </button>
+              {userMenuOpen && (
+                <div
+                  className="absolute right-0 top-full mt-2 w-52 rounded-xl border border-gray-100 bg-white py-1 shadow-xl z-[150]"
+                  role="menu"
+                >
+                  <NavLink
+                    to="/dashboard/parametres"
+                    role="menuitem"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-coris-navy hover:bg-coris-gray"
+                  >
+                    <Settings size={16} /> Paramètres
+                  </NavLink>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      handleLogout();
+                    }}
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50"
+                  >
+                    <LogOut size={16} /> Déconnexion
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="hidden lg:flex w-10 h-10 rounded-xl bg-coris-blue text-white items-center justify-center font-bold text-sm">
+              {user.firstName[0]}
+              {user.lastName[0]}
             </div>
           </div>
         </header>
@@ -172,6 +278,27 @@ export default function DashboardLayout() {
               <span className="hidden sm:inline">{label}</span>
             </NavLink>
           ))}
+          <NavLink
+            to="/dashboard/parametres"
+            className={({ isActive }) =>
+              `shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all border border-dashed border-gray-200 ${
+                isActive ? 'bg-coris-blue text-white border-transparent' : 'text-coris-gray-dark hover:bg-coris-gray'
+              }`
+            }
+            title="Paramètres"
+          >
+            <Settings size={14} />
+            <span className="hidden sm:inline">Paramètres</span>
+          </NavLink>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-red-600 hover:bg-red-50"
+            title="Déconnexion"
+          >
+            <LogOut size={14} />
+            <span className="hidden sm:inline">Déconnexion</span>
+          </button>
         </div>
 
         {/* Page content */}

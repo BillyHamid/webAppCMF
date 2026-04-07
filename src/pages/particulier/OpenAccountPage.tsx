@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
@@ -22,7 +22,16 @@ import {
   Sparkles,
   Building2,
   PiggyBank,
+  Loader2,
 } from 'lucide-react';
+import {
+  accountTypeToFinacomDestinator,
+  fetchDocumentsRequis,
+  submitProspectAssociation,
+  submitProspectMoral,
+  submitProspectPhysique,
+  type DocumentRequisItem,
+} from '../../services/finacomApi';
 
 /* ═══════════════════════════════════════════════════════════
    HERO
@@ -274,6 +283,13 @@ function AccountForm() {
   const [submitted, setSubmitted] = useState(false);
   const [submissionRef, setSubmissionRef] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  /** Pièces imposées par Finacom (UUID backend) + fichiers sélectionnés */
+  const [finacomDocs, setFinacomDocs] = useState<DocumentRequisItem[]>([]);
+  const [finacomDocsLoading, setFinacomDocsLoading] = useState(false);
+  const [finacomDocsError, setFinacomDocsError] = useState<string | null>(null);
+  const [prospectFiles, setProspectFiles] = useState<Record<string, File | undefined>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     accountType: '',
@@ -318,6 +334,26 @@ function AccountForm() {
     setForm((prev) => ({ ...prev, [field]: value }));
 
   const selectedAccount = getAccountById(form.accountType);
+
+  useEffect(() => {
+    const dest = accountTypeToFinacomDestinator(form.accountType);
+    setProspectFiles({});
+    setFinacomDocsError(null);
+    setFinacomDocs([]);
+    if (!dest) return;
+    setFinacomDocsLoading(true);
+    fetchDocumentsRequis(dest)
+      .then((docs) => {
+        setFinacomDocs(docs);
+        if (docs.length === 0) {
+          setFinacomDocsError(
+            'Aucune pièce requise n’est configurée côté serveur. Contactez l’administrateur Finacom.'
+          );
+        }
+      })
+      .catch((e: Error) => setFinacomDocsError(e.message ?? 'Erreur réseau'))
+      .finally(() => setFinacomDocsLoading(false));
+  }, [form.accountType]);
 
   const canNext = () => {
     const t = selectedAccount;
@@ -395,8 +431,12 @@ function AccountForm() {
         }
         return false;
       }
-      case 3:
-        return !!(form.idType && form.idNumber && form.password && form.password.length >= 8);
+      case 3: {
+        if (!(form.idType && form.idNumber && form.password && form.password.length >= 8)) return false;
+        if (finacomDocsLoading) return false;
+        if (finacomDocsError || finacomDocs.length === 0) return false;
+        return finacomDocs.every((d) => Boolean(prospectFiles[d.uuid]));
+      }
       case 4:
         return form.acceptTerms;
       default:
@@ -404,10 +444,85 @@ function AccountForm() {
     }
   };
 
-  const handleSubmit = () => {
-    const ref = `CMF-2026-${String(Math.floor(Math.random() * 99999)).padStart(5, '0')}`;
-    setSubmissionRef(ref);
-    setSubmitted(true);
+  const handleSubmit = async () => {
+    if (!selectedAccount) return;
+    const dest = accountTypeToFinacomDestinator(form.accountType);
+    if (!dest) {
+      setSubmitError('Type de compte non pris en charge pour l’envoi au back-office.');
+      return;
+    }
+    setSubmitError(null);
+    setSubmitting(true);
+    const fallbackRef = `CMF-2026-${String(Math.floor(Math.random() * 99999)).padStart(5, '0')}`;
+    try {
+      let res: { numeroClient?: string; id?: string } = {};
+      const files = prospectFiles;
+
+      if (dest === 'PERSONNE_PHYSIQUE') {
+        const payload = {
+          nom: form.lastName.trim(),
+          prenom: form.firstName.trim(),
+          dateNaissance: form.dateOfBirth,
+          lieuNaissance: form.city.trim() || '—',
+          profession: form.profession.trim(),
+          employeur: form.employer.trim(),
+          adresseEmployeur: '',
+          numeroCNIB: form.idNumber.trim(),
+          adresse: [form.address, form.city].filter(Boolean).join(', '),
+          email: form.email.trim(),
+          telephone1: form.phone.trim(),
+          telephone2: '',
+          bp: '',
+        };
+        res = await submitProspectPhysique(payload, files);
+      } else if (dest === 'PERSONNE_MORALE') {
+        const payload = {
+          raisonSociale: form.orgDenomination.trim(),
+          rccm: form.orgRccm.trim(),
+          numIfu: form.orgIfu.trim(),
+          formeJuridique: form.legalForm.trim(),
+          domaineActivite: form.activitySector.trim(),
+          nomResponsable: form.representativeLastName.trim(),
+          prenomResponsable: form.representativeFirstName.trim(),
+          sexeResponsable: '',
+          telResponsable: form.representativePhone.trim(),
+          emailResponsable: form.orgEmail.trim(),
+          adresseResponsable: form.orgSiegeAddress.trim(),
+          adresse: form.orgSiegeAddress.trim(),
+          email: form.orgEmail.trim(),
+          telephone1: form.orgPhone.trim(),
+          telephone2: '',
+          bp: '',
+        };
+        res = await submitProspectMoral(payload, files);
+      } else {
+        const payload = {
+          nomOrganisation: form.orgDenomination.trim(),
+          typeOrganisation: '',
+          domaineActivite: form.associationSignatoriesDetails.trim().slice(0, 500),
+          nomRepresentant: form.representativeLastName.trim(),
+          prenomRepresentant: form.representativeFirstName.trim(),
+          sexeRepresentant: '',
+          telRepresentant: form.representativePhone.trim(),
+          emailRepresentant: form.orgEmail.trim(),
+          adresseRepresentant: form.orgSiegeAddress.trim(),
+          adresse: form.orgSiegeAddress.trim(),
+          email: form.orgEmail.trim(),
+          telephone1: form.orgPhone.trim(),
+          telephone2: '',
+          bp: '',
+        };
+        res = await submitProspectAssociation(payload, files);
+      }
+
+      const ref = res.numeroClient || res.id || fallbackRef;
+      setSubmissionRef(String(ref));
+      setSubmitted(true);
+    } catch (e) {
+      setSubmitError(e instanceof Error ? e.message : 'Erreur lors de l’envoi du dossier.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -422,8 +537,8 @@ function AccountForm() {
         </div>
         <h2 className="text-3xl font-extrabold text-coris-navy mb-3">Demande envoyée !</h2>
         <p className="text-coris-gray-dark max-w-md mx-auto mb-4">
-          Votre demande d'ouverture de compte <strong>{selectedAccount?.name}</strong> a été 
-          soumise avec succès. Notre équipe la traitera sous 24 heures ouvrées.
+          Votre demande d'ouverture de compte <strong>{selectedAccount?.name}</strong> a été
+          enregistrée dans le système back-office (Finacom) et placée en <strong>attente de validation</strong>. Notre équipe la traitera sous 24 heures ouvrées.
         </p>
         <div className="inline-flex items-center gap-2 bg-coris-blue/5 border border-coris-blue/15 rounded-xl px-5 py-3 mb-6">
           <span className="text-xs text-coris-gray-dark">Votre référence :</span>
@@ -783,7 +898,7 @@ function AccountForm() {
             <div>
               <h3 className="text-xl font-bold text-coris-navy mb-1">Pièces justificatives</h3>
               <p className="text-sm text-coris-gray-dark mb-4">
-                Téléchargez les documents correspondant au type <strong>{selectedAccount.name}</strong>. Formats acceptés : PDF, JPG, PNG (max. 10 Mo par fichier recommandé).
+                Téléchargez les pièces exigées par le système de gestion des dossiers (Finacom). Formats : PDF, JPG, PNG (max. 10 Mo par fichier recommandé).
               </p>
               <div className="bg-coris-blue/[0.04] border border-coris-blue/15 rounded-xl p-4 mb-6">
                 <p className="text-xs font-bold text-coris-navy mb-2">Rappel — dépôt initial</p>
@@ -803,18 +918,34 @@ function AccountForm() {
                 <InputField label="Numéro de la pièce" value={form.idNumber} onChange={(v) => update('idNumber', v)} placeholder="B0012345678" required />
               </div>
 
-              <p className="text-xs font-semibold text-coris-navy uppercase tracking-wider mb-3">Fichiers à joindre</p>
-              <div className="grid sm:grid-cols-2 gap-4 mb-6">
-                {getDocumentUploadSlots(form.accountType).map((slot) => (
-                  <FileUpload
-                    key={slot.id}
-                    label={slot.label}
-                    accept="image/*,.pdf"
-                    subtitle={slot.subtitle}
-                    optional={slot.optional}
-                  />
-                ))}
-              </div>
+              <p className="text-xs font-semibold text-coris-navy uppercase tracking-wider mb-3">Fichiers à joindre (obligatoires)</p>
+              {finacomDocsLoading && (
+                <div className="flex items-center gap-2 text-sm text-coris-gray-dark mb-6 py-4">
+                  <Loader2 className="animate-spin text-coris-blue" size={20} />
+                  Chargement de la liste des pièces depuis le serveur…
+                </div>
+              )}
+              {finacomDocsError && !finacomDocsLoading && (
+                <div className="rounded-xl border border-coris-red/30 bg-red-50 text-coris-red text-sm px-4 py-3 mb-6">
+                  {finacomDocsError}
+                </div>
+              )}
+              {!finacomDocsLoading && !finacomDocsError && finacomDocs.length > 0 && (
+                <div className="grid sm:grid-cols-2 gap-4 mb-6">
+                  {finacomDocs.map((doc) => (
+                    <FileUpload
+                      key={doc.uuid}
+                      label={doc.libelle}
+                      accept="image/*,.pdf"
+                      subtitle={doc.description}
+                      file={prospectFiles[doc.uuid]}
+                      onFileChange={(f) =>
+                        setProspectFiles((prev) => ({ ...prev, [doc.uuid]: f || undefined }))
+                      }
+                    />
+                  ))}
+                </div>
+              )}
 
               {/* Password */}
               <div className="max-w-sm">
@@ -861,6 +992,12 @@ function AccountForm() {
             <div>
               <h3 className="text-xl font-bold text-coris-navy mb-1">Récapitulatif</h3>
               <p className="text-sm text-coris-gray-dark mb-6">Vérifiez vos informations avant de soumettre votre demande.</p>
+
+              {submitError && (
+                <div className="rounded-xl border border-coris-red/30 bg-red-50 text-coris-red text-sm px-4 py-3 mb-6">
+                  {submitError}
+                </div>
+              )}
 
               <div className="space-y-4">
                 <SummaryCard
@@ -983,8 +1120,8 @@ function AccountForm() {
                   rows={[
                     ['Pièce d’identité (saisie)', `${form.idType} — ${form.idNumber}`],
                     [
-                      'Fichiers joints',
-                      `${getDocumentUploadSlots(form.accountType).length} type(s) de document(s)`,
+                      'Fichiers joints (Finacom)',
+                      `${finacomDocs.filter((d) => prospectFiles[d.uuid]).length} / ${finacomDocs.length} pièce(s)`,
                     ],
                   ]}
                   onEdit={() => setStep(3)}
@@ -1039,16 +1176,26 @@ function AccountForm() {
           </button>
         ) : (
           <button
-            onClick={handleSubmit}
-            disabled={!canNext()}
+            type="button"
+            onClick={() => void handleSubmit()}
+            disabled={!canNext() || submitting}
             className={`flex items-center gap-2 text-sm font-bold px-8 py-3.5 rounded-xl transition-all ${
-              canNext()
+              canNext() && !submitting
                 ? 'bg-coris-red text-white hover:bg-coris-red-dark shadow-lg shadow-coris-red/20'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}
           >
-            Soumettre ma demande
-            <ArrowRight size={16} />
+            {submitting ? (
+              <>
+                <Loader2 className="animate-spin" size={16} />
+                Envoi en cours…
+              </>
+            ) : (
+              <>
+                Soumettre ma demande
+                <ArrowRight size={16} />
+              </>
+            )}
           </button>
         )}
       </div>
@@ -1103,10 +1250,17 @@ function SelectField({ label, value, onChange, options, required }: {
   );
 }
 
-function FileUpload({ label, accept, subtitle, optional }: {
-  label: string; accept: string; subtitle?: string; optional?: boolean;
+function FileUpload({ label, accept, subtitle, optional, file, onFileChange }: {
+  label: string;
+  accept: string;
+  subtitle?: string;
+  optional?: boolean;
+  file?: File | null;
+  onFileChange?: (file: File | null) => void;
 }) {
-  const [fileName, setFileName] = useState('');
+  const [localName, setLocalName] = useState('');
+  const controlled = typeof onFileChange === 'function';
+  const fileName = controlled ? (file?.name || '') : localName;
 
   return (
     <div>
@@ -1136,7 +1290,11 @@ function FileUpload({ label, accept, subtitle, optional }: {
           type="file"
           accept={accept}
           className="hidden"
-          onChange={(e) => setFileName(e.target.files?.[0]?.name || '')}
+          onChange={(e) => {
+            const f = e.target.files?.[0] ?? null;
+            if (controlled) onFileChange(f);
+            else setLocalName(f?.name || '');
+          }}
         />
       </label>
     </div>

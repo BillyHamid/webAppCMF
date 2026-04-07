@@ -404,7 +404,7 @@ function BottomCTA() {
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link
-              to="/contact/formulaire"
+              to="/contact"
               className="inline-flex items-center gap-2 bg-coris-red text-white font-semibold px-7 py-3.5 rounded-full text-sm hover:bg-coris-red-dark transition-colors shadow-lg shadow-coris-red/20"
             >
               Nous contacter

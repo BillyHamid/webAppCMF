@@ -42,7 +42,7 @@ export default function QuickAccess() {
             transition={{ delay: 0.1 }}
           >
             <Link
-              to="/entreprise/solutions-digitales"
+              to="/entreprise"
               className="group flex items-start gap-5 bg-white rounded-2xl p-7 hover:shadow-xl hover:shadow-coris-blue/5 transition-all h-full border border-gray-100 hover:border-coris-red/20"
             >
               <div className="w-14 h-14 bg-coris-red/8 rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-coris-red group-hover:scale-105 transition-all">

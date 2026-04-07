@@ -43,7 +43,7 @@ export default function OnlineBanking() {
             </div>
 
             <Link
-              to="/internet-banking"
+              to="/login"
               className="inline-flex items-center gap-2 bg-coris-red hover:bg-coris-red-light text-white font-semibold px-7 py-3.5 rounded-full text-sm transition-colors shadow-lg shadow-coris-red/20"
             >
               Accéder à mon espace

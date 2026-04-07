@@ -61,8 +61,12 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
           {/* Brand */}
           <div className="col-span-2 md:col-span-3 lg:col-span-2 mb-4 lg:mb-0">
-            <Link to="/" className="inline-block mb-5">
-              <SiteLogo inverted className="h-12 object-contain" />
+            <Link
+              to="/"
+              className="inline-flex mb-5 rounded-xl bg-white px-4 py-2.5 shadow-sm ring-1 ring-white/10"
+              aria-label="Coris Meso Finance — accueil"
+            >
+              <SiteLogo className="h-10 w-auto max-w-[220px] object-contain object-left" />
             </Link>
             <p className="text-xs text-gray-400 mb-5 leading-relaxed max-w-xs">
               Coris Meso Finance, institution de microfinance agréée et réglementée 

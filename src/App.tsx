@@ -1,10 +1,11 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, Navigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import Layout from './components/layout/Layout';
 import SiteLogo from './components/brand/SiteLogo';
 import Home from './pages/Home';
 import DigitalBankingPage from './pages/particulier/DigitalBankingPage';
 import OpenAccountPage from './pages/particulier/OpenAccountPage';
+import ParticulierHubPage from './pages/particulier/ParticulierHubPage';
 import TrackRequestPage from './pages/particulier/TrackRequestPage';
 import CartesPage from './pages/particulier/CartesPage';
 import PretsPage from './pages/particulier/PretsPage';
@@ -13,6 +14,7 @@ import EntreprisePage from './pages/entreprise/EntreprisePage';
 import AboutPage from './pages/info/AboutPage';
 import ContactPage from './pages/info/ContactPage';
 import ActualitesPage from './pages/info/ActualitesPage';
+import NewsArticlePage from './pages/info/NewsArticlePage';
 import LoginPage from './pages/LoginPage';
 import DashboardLayout from './pages/dashboard/DashboardLayout';
 import { DashboardFinanceProvider } from './context/DashboardFinanceContext';
@@ -35,6 +37,7 @@ export default function App() {
         {/* Public pages with Header/Footer */}
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/particulier" element={<ParticulierHubPage />} />
           <Route path="/particulier/digital" element={<DigitalBankingPage />} />
           <Route path="/particulier/digital/*" element={<DigitalBankingPage />} />
           <Route path="/particulier/epargne" element={<OpenAccountPage />} />
@@ -46,8 +49,20 @@ export default function App() {
           <Route path="/a-propos" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/actualites" element={<ActualitesPage />} />
+          <Route path="/actualites/:slug" element={<NewsArticlePage />} />
           <Route path="/suivi" element={<TrackRequestPage />} />
-          <Route path="*" element={<PlaceholderPage />} />
+
+          {/* Anciens liens / raccourcis → routes canoniques */}
+          <Route path="/actualite" element={<Navigate to="/actualites" replace />} />
+          <Route path="/actualite/:slug" element={<RedirectToActualitesSlug />} />
+          <Route path="/particulier/transfert" element={<Navigate to="/particulier/transferts" replace />} />
+          <Route path="/particulier/cartes/choisir" element={<Navigate to="/particulier/cartes" replace />} />
+          <Route path="/entreprise/solutions-digitales" element={<Navigate to="/entreprise" replace />} />
+          <Route path="/contact/assistance" element={<Navigate to="/contact" replace />} />
+          <Route path="/contact/formulaire" element={<Navigate to="/contact" replace />} />
+          <Route path="/internet-banking" element={<Navigate to="/login" replace />} />
+
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
 
         {/* Login (no Header/Footer) */}
@@ -79,19 +94,22 @@ export default function App() {
   );
 }
 
-function PlaceholderPage() {
+function RedirectToActualitesSlug() {
+  const { slug } = useParams<{ slug: string }>();
+  if (!slug) return <Navigate to="/actualites" replace />;
+  return <Navigate to={`/actualites/${slug}`} replace />;
+}
+
+function NotFoundPage() {
   return (
     <div className="min-h-[60vh] flex items-center justify-center bg-coris-gray">
       <div className="text-center px-4">
         <Link to="/" className="inline-block mb-8">
           <SiteLogo className="h-12 md:h-14 object-contain mx-auto" />
         </Link>
-        <div className="w-16 h-16 bg-coris-blue/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <span className="text-2xl">🏗️</span>
-        </div>
-        <h1 className="text-3xl font-extrabold text-coris-navy mb-3">Page en construction</h1>
+        <h1 className="text-3xl font-extrabold text-coris-navy mb-3">Page introuvable</h1>
         <p className="text-coris-gray-dark mb-8 max-w-md mx-auto">
-          Cette page sera bientôt disponible. Revenez nous voir prochainement !
+          Cette adresse ne correspond à aucune page du site. Vérifiez l’URL ou revenez à l’accueil.
         </p>
         <Link
           to="/"

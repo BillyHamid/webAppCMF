@@ -27,7 +27,7 @@ export default function NewsSection() {
             </h2>
           </motion.div>
           <Link
-            to="/actualite"
+            to="/actualites"
             className="hidden md:inline-flex items-center gap-2 text-coris-blue font-semibold text-sm hover:gap-3 transition-all group"
           >
             Tout voir
@@ -45,7 +45,7 @@ export default function NewsSection() {
               transition={{ delay: index * 0.1 }}
             >
               <Link
-                to={`/actualite/${article.slug}`}
+                to={`/actualites/${article.slug}`}
                 className="group flex flex-col bg-white rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-black/5 transition-all h-full border border-gray-100"
               >
                 {/* Image */}
@@ -84,7 +84,7 @@ export default function NewsSection() {
 
         <div className="mt-10 text-center md:hidden">
           <Link
-            to="/actualite"
+            to="/actualites"
             className="inline-flex items-center gap-2 text-coris-blue font-semibold text-sm"
           >
             Voir toutes les actualités

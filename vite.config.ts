@@ -2,16 +2,23 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
+const finacomProxy = {
+  '/finacom': {
+    target: 'https://cmfback.onrender.com',
+    changeOrigin: true,
+    secure: true,
+    rewrite: (path: string) => path.replace(/^\/finacom/, ''),
+  },
+} as const;
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    // En dev : le front appelle `/finacom` → même origine (pas de CORS). Cible = API Finacom.
-    proxy: {
-      '/finacom': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/finacom/, ''),
-      },
-    },
+    // Dev : `/finacom` → API Finacom (évite CORS).
+    proxy: { ...finacomProxy },
+  },
+  preview: {
+    // Même logique pour `npm run preview` (évite CORS si base relative `/finacom`).
+    proxy: { ...finacomProxy },
   },
 })

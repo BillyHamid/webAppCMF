@@ -1,13 +1,12 @@
 /**
  * Client HTTP vers le backend Finacom (ouverture de compte → dossiers PENDING côté admin).
- * - Dev sans variable : préfixe `/finacom` (proxy Vite → localhost:8080, évite les blocages CORS).
- * - Sinon : `VITE_FINACOM_API_URL` (ex. http://localhost:8080 ou URL de prod).
+ * - Sans `VITE_FINACOM_API_URL` : préfixe `/finacom` (proxy Vite en dev **et** en preview → https://cmfback.onrender.com).
+ * - Sinon : URL absolue (ex. `.env` avec `VITE_FINACOM_API_URL`).
  */
 export function getFinacomApiBase(): string {
   const raw = import.meta.env.VITE_FINACOM_API_URL as string | undefined;
   if (raw?.trim()) return raw.replace(/\/$/, '').trim();
-  if (import.meta.env.DEV) return '/finacom';
-  return 'http://localhost:8080';
+  return '/finacom';
 }
 
 export type FinacomDestinator = 'PERSONNE_PHYSIQUE' | 'PERSONNE_MORALE' | 'ASSOCIATION';
@@ -16,6 +15,12 @@ export interface DocumentRequisItem {
   uuid: string;
   libelle: string;
   description?: string;
+}
+
+function normalizeDoc(d: DocumentRequisItem & { id?: string }): DocumentRequisItem | null {
+  const uuid = d.uuid ?? d.id;
+  if (uuid === undefined || uuid === null || String(uuid).trim() === '') return null;
+  return { uuid: String(uuid), libelle: d.libelle ?? '', description: d.description };
 }
 
 export function accountTypeToFinacomDestinator(accountTypeId: string): FinacomDestinator | null {
@@ -40,8 +45,9 @@ export async function fetchDocumentsRequis(destinator: FinacomDestinator): Promi
   if (!res.ok) {
     throw new Error(`Impossible de charger les pièces requises (${res.status}). Vérifiez que le serveur Finacom est démarré.`);
   }
-  const data = (await res.json()) as DocumentRequisItem[];
-  return Array.isArray(data) ? data : [];
+  const data = (await res.json()) as (DocumentRequisItem & { id?: string })[];
+  if (!Array.isArray(data)) return [];
+  return data.map(normalizeDoc).filter((x): x is DocumentRequisItem => x !== null);
 }
 
 function appendMultipart(data: object, filesByUuid: Record<string, File | undefined>): FormData {
